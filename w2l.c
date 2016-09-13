@@ -15,7 +15,12 @@ int fsize(FILE *f){
 	return size;
 }
 
+void nprintf(void *x, int v){
+	printf("%d \n",v);
+}
+
 int main (int argc , char **argv){
+	//definition of function
 	typedef int (*func_t)(int);
 	func_t func;
 	void *data;
@@ -31,7 +36,7 @@ int main (int argc , char **argv){
 
 	//allocating memory
 	data = mmap(NULL,size,PROT_EXEC | PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
-
+	
 	if (data == (void *) -1){
 		return FAILURE;
 	}
@@ -39,12 +44,51 @@ int main (int argc , char **argv){
 	//filling memory with nops
 	memset(data,0x90,size);
 
+	//read file in memory
 	fread (data,1,size,f);
 	fclose(f);
 
 	printf("%p \n",data);
-	//position where data resides in loaded stream
-	func = (func_t)data+0x400;
+
+	void *p = data+0x45a;
+	
+	char opcode=0;
+	sscanf(data+0x45a,"%c",&opcode);
+	printf("%x %p %p\n",opcode,p,nprintf);
+	opcode=0;
+	sscanf(data+0x45b,"%c",&opcode);
+	printf("%x %p %p\n",opcode,p,nprintf);
+	opcode=0;
+	sscanf(data+0x45c,"%c",&opcode);
+	printf("%x %p %p\n",opcode,p,nprintf);
+	opcode=0;
+	sscanf(data+0x45d,"%c",&opcode);
+	printf("%x %p %p\n",opcode,p,nprintf);
+	opcode=0;
+	sscanf(data+0x45e,"%c",&opcode);
+	printf("%x %p %p\n",opcode,p,nprintf);
+
+	int addr = &nprintf;
+	printf("%x\n",addr);
+	
+	//sprintf(data+0x45b,"%p\n",nprintf);
+	memcpy(data+0x45b,addr,4);
+
+	opcode = 0;
+	sscanf(data+0x45b,"%c",&opcode);
+	printf("%x %p %p\n",opcode,p,nprintf);
+	opcode=0;
+	sscanf(data+0x45c,"%c",&opcode);
+	printf("%x %p %p\n",opcode,p,nprintf);
+	opcode=0;
+	sscanf(data+0x45d,"%c",&opcode);
+	printf("%x %p %p\n",opcode,p,nprintf);
+	opcode=0;
+	sscanf(data+0x45e,"%c",&opcode);
+	printf("%x %p %p\n",opcode,p,nprintf);
+	opcode=0;
+	//position where function data resides in loaded stream
+	func = (func_t)data+0x420;
 
 	//running the function
 	printf("%d\n",func(13));
